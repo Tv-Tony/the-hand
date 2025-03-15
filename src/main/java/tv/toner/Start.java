@@ -5,6 +5,9 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -12,6 +15,8 @@ import javafx.stage.Stage;
 import tv.toner.socket.ClientHandler;
 
 public class Start extends Application {
+
+    private static final Logger log = LogManager.getLogger(Start.class);
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -31,17 +36,15 @@ public class Start extends Application {
         int port = 12344; // Port to listen on
 
         try (ServerSocket serverSocket = new ServerSocket(port, 50, InetAddress.getByName("127.0.0.1"));) {
-            System.out.println("Server is listening on port " + port);
+            log.info("Server is listening on port {}", port);
 
             while (true) {
                 Socket socket = serverSocket.accept();
-                System.out.println("Connected to Arduino client");
-
-                // Handle client connection
-                new Thread(new ClientHandler(socket)).start();
+                log.info("Connected to Arduino client");
+                new Thread(new ClientHandler(socket)).start(); // Handle client connection
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.error(ex.getMessage());
         }
     }
 

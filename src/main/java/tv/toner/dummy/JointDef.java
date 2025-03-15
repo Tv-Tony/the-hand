@@ -42,4 +42,12 @@ public enum JointDef {
         return this.bonePattern;
     }
 
+    public static String getBonePatternByName(String name) {
+        for (JointDef joint : JointDef.values()) {
+            if (joint.name().equalsIgnoreCase(name)) {
+                return joint.bonePattern;  // Return the bone pattern of the matched enum constant
+            }
+        }
+        return null;  // Return null if no match found
+    }
 }
