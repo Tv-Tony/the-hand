@@ -3,6 +3,9 @@ package tv.toner.socket;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.javafx.experiments.importers.maya.Joint;
 import com.javafx.experiments.shape3d.PolygonMeshView;
 import com.javafx.experiments.shape3d.SkinningMesh;
@@ -13,14 +16,21 @@ import tv.toner.dto.JointStruct;
 import tv.toner.dummy.JointDef;
 
 public class HandRefresher {
+
+    private static final Logger log = LoggerFactory.getLogger(HandRefresher.class);
+
     public static void refresh(List<Parent> forestRight, List<JointStruct> jointStruc, PolygonMeshView skinningRight) {
         jointStruc.forEach(joint -> {
-            String bonePattern = JointDef.getBonePatternByName(joint.getName());
-            Joint tempJoint = (Joint) forestRight.get(0).lookup(bonePattern);
-            tempJoint.rx.setAngle(joint.getJoint().getJox());
-            tempJoint.ry.setAngle(joint.getJoint().getJoy());
-            tempJoint.rz.setAngle(joint.getJoint().getJoz());
-            ((SkinningMesh) skinningRight.getMesh()).update();
+            try {
+                String bonePattern = JointDef.getBonePatternByName(joint.getName());
+                Joint tempJoint = (Joint) forestRight.get(0).lookup(bonePattern);
+                tempJoint.rx.setAngle(joint.getJoint().getJox());
+                tempJoint.ry.setAngle(joint.getJoint().getJoy());
+                tempJoint.rz.setAngle(joint.getJoint().getJoz());
+                ((SkinningMesh) skinningRight.getMesh()).update();
+            } catch (Exception e) {
+                log.warn("Error Setting Values: {}", e.getMessage());
+            }
         });
     }
 
