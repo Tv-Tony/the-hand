@@ -1,14 +1,18 @@
 plugins {
     id 'java'
     id 'application'
+    id 'org.springframework.boot' version '2.7.17' // ✅ Java 8 Compatible
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE' // ✅ Java 8 Compatible
 }
 
 application {
-    mainClass = 'tv.toner.Start'
+//    mainClass = 'tv.toner.Start'
+    mainClass = 'tv.toner.TheHand'
 }
 
 group = 'tv.toner'
 version = '1.0-SNAPSHOT'
+sourceCompatibility = JavaVersion.VERSION_1_8 // ✅ Ensure Java 8 Compatibility
 
 repositories {
     mavenCentral()
@@ -38,6 +42,9 @@ dependencies {
 
     // Java Simple Serial Connector
     implementation 'org.scream3r:jssc:2.8.0'
+
+    // Spring Boot Core
+    implementation 'org.springframework.boot:spring-boot-starter'
 }
 
 test {
