@@ -14,13 +14,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import tv.toner.dto.JointStruct;
+import tv.toner.dto.TestStruct;
 
 public class ClientHandler implements Runnable {
 
     private static final Logger log = LogManager.getLogger(ClientHandler.class);
 
     private final Socket socket;
-    private static volatile List<JointStruct> latestValue;
+    private static volatile TestStruct latestValue;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -48,7 +49,7 @@ public class ClientHandler implements Runnable {
 
         try {
 //            latestValue = objectMapper.readValue(data, HandDTO.class);
-            List<JointStruct> theLatestValue = objectMapper.readValue(data, objectMapper.getTypeFactory().constructCollectionType(List.class, JointStruct.class));
+            TestStruct theLatestValue = objectMapper.readValue(data, TestStruct.class);
             output.println("Acknowledged: " + data);  // Acknowledge the data
             latestValue = theLatestValue;
         } catch (JsonProcessingException ex) {
@@ -66,7 +67,7 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    public static List<JointStruct> getLatestValue() {
+    public static TestStruct getLatestValue() {
         return latestValue;
     }
 }
