@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.springframework.stereotype.Component;
+
 import com.javafx.experiments.importers.maya.Joint;
 import com.javafx.experiments.shape3d.PolygonMeshView;
 import com.javafx.experiments.shape3d.SkinningMesh;
@@ -30,6 +32,7 @@ import tv.toner.riggedHand.HandImporter;
 import tv.toner.socket.Updater;
 import tv.toner.utils.DragSupport;
 
+@Component
 public class OpenViewController implements Initializable {
 
     @FXML
