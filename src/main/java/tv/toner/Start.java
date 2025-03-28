@@ -12,6 +12,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import tv.toner.listener.GloveListener;
 import tv.toner.socket.ClientHandler;
 
 public class Start extends Application {
@@ -34,6 +35,9 @@ public class Start extends Application {
 
     private void startSocketServer() {
         int port = 12344; // Port to listen on
+
+        GloveListener listener = new GloveListener();
+        listener.startListening();
 
         try (ServerSocket serverSocket = new ServerSocket(port, 50, InetAddress.getByName("127.0.0.1"));) {
             log.info("Server is listening on port {}", port);
