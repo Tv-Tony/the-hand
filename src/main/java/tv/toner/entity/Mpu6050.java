@@ -1,4 +1,4 @@
-package tv.toner.dto;
+package tv.toner.entity;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

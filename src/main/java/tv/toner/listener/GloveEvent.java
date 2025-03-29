@@ -1,9 +1,9 @@
-package tv.toner.event;
+package tv.toner.listener;
 
 import org.springframework.context.ApplicationEvent;
 
 import lombok.Getter;
-import tv.toner.dto.Mpu6050;
+import tv.toner.entity.Mpu6050;
 
 @Getter
 public class GloveEvent extends ApplicationEvent {
