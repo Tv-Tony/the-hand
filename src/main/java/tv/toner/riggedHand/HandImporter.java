@@ -24,6 +24,8 @@ import javafx.scene.shape.DrawMode;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.scene.transform.Translate;
+import lombok.Getter;
+import lombok.Setter;
 import tv.toner.utils.Axes;
 
 /**
@@ -31,6 +33,8 @@ import tv.toner.utils.Axes;
  * @author Alexander Kouznetsov
  * Modified by José Pereda
  */
+@Getter
+@Setter
 public class HandImporter {
 
     private final JsonReader reader;
@@ -269,8 +273,4 @@ public class HandImporter {
         }
         skinningMeshView.setCullFace(CullFace.BACK);
     }
-
-    public PolygonMeshView getSkinningMeshView() { return skinningMeshView; }
-
-    public List<Parent> getJointForest() { return jointForest; }
 }

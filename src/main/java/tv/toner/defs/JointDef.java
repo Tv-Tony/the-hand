@@ -1,5 +1,8 @@
-package tv.toner.dummy;
+package tv.toner.defs;
 
+import lombok.Getter;
+
+@Getter
 public enum JointDef {
     // Thumb
     THUMB_METACARPAL("#Finger_01"),
@@ -30,16 +33,12 @@ public enum JointDef {
     PINKY_INTERMEDIATE("#Finger_42"),
     PINKY_DISTAL("#Finger_43");
 
+    // Method to get the string representation of the bone
     private final String bonePattern;
 
     // Constructor to initialize the string representation
     JointDef(String bonePattern) {
         this.bonePattern = bonePattern;
-    }
-
-    // Method to get the string representation of the bone
-    public String getBonePattern() {
-        return this.bonePattern;
     }
 
     public static String getBonePatternByName(String name) {

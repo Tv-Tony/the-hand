@@ -7,10 +7,7 @@ import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
-import com.javafx.experiments.importers.maya.Joint;
 import com.javafx.experiments.importers.maya.Joint;
 import com.javafx.experiments.shape3d.PolygonMeshView;
 import com.javafx.experiments.shape3d.SkinningMesh;
@@ -32,12 +29,11 @@ import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import tv.toner.riggedHand.HandImporter;
-import tv.toner.socket.Updater;
+import tv.toner.listener.Updater;
 import tv.toner.utils.DragSupport;
-import tv.toner.utils.SpringContext;
 
 @Controller
-public class OpenViewController implements Initializable {
+public class TheHandController implements Initializable {
 
     @FXML
     private SubScene mySubScene;
@@ -62,29 +58,15 @@ public class OpenViewController implements Initializable {
     private PolygonMeshView skinningLeft;
     private List<Parent> forestLeft = new ArrayList<>();
 
-    private Updater updater;
+    private final Updater updater;
 
     @Autowired
-    public OpenViewController(Updater updater) {
+    public TheHandController(Updater updater) {
         this.updater = updater;
     }
 
-
-//    public OpenViewController(List<Parent> forestRight, List<Parent> forestLeft,
-//                              PolygonMeshView skinningRight, PolygonMeshView skinningLeft) {
-//        this.forestRight = forestRight;
-//        this.forestLeft = forestLeft;
-//        this.skinningRight = skinningRight;
-//        this.skinningLeft = skinningLeft;
-//    }
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
-//        if (context == null) {
-//            context = SpringContext.getApplicationContext();  // Helper class
-//        }
-
 
         setupRiggedHands();
         setCoordinateDisplay();
@@ -167,24 +149,19 @@ public class OpenViewController implements Initializable {
 
         forestLeft = handLeft.getJointForest();
         skinningLeft = handLeft.getSkinningMeshView();
-//
-//               /*
-//        Model downloaded from
-//        https://github.com/leapmotion/leapjs-rigged-hand/blob/master/src/models/hand_models_v1.js
-//        */
+
+        /*
+        Model downloaded from
+        https://github.com/leapmotion/leapjs-rigged-hand/blob/master/src/models/hand_models_v1.js
+        */
         HandImporter handRight = new HandImporter("modelRight.json", false, false);
         handRight.readModel(50f);
 
         forestRight = handRight.getJointForest();
         skinningRight = handRight.getSkinningMeshView();
 
-//        this.forestLeft = context.getBean("forestRight", List.class);
-//        forestLeft = context.getBean("forestLeft", List.class);
-//        skinningRight = context.getBean("skinningRight", PolygonMeshView.class);
-//        skinningLeft = context.getBean("skinningLeft", PolygonMeshView.class);
-
         updater.initialize(forestRight, skinningRight);
-//        System.out.println(forestRight);
+
         setPositionOfHands();
         skinRefresh();
     }

@@ -1,6 +1,6 @@
 package tv.toner.utils;
 
-import tv.toner.dto.Mpu6050;
+import tv.toner.entity.Mpu6050;
 
 public class EMAFilter {
     // Method to apply the EMA filter to a stream of sensor readings
