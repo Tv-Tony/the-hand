@@ -45,6 +45,12 @@ dependencies {
 
     // Spring Boot Core
     implementation 'org.springframework.boot:spring-boot-starter'
+
+    // Apache Commons Lang (for ToStringBuilder)
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+
+    // Java Tuples
+    implementation("org.javatuples:javatuples:1.2")
 }
 
 test {

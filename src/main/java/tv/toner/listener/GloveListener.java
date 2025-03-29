@@ -1,8 +1,11 @@
 package tv.toner.listener;
 
+import java.nio.ByteBuffer;
+import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -10,13 +13,20 @@ import javax.annotation.PreDestroy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
+import lombok.Setter;
 import tv.toner.TheHand;
+import tv.toner.dto.Mpu6050;
+import tv.toner.event.GloveEvent;
+import tv.toner.socket.Updater;
+import tv.toner.utils.MpuUtils;
 
 /**
  * Serial Port Listener, used to establish connection with Arduino Glove
@@ -24,7 +34,8 @@ import tv.toner.TheHand;
  * @author Antonin Vychodil <a_vychodil [at] utb.cz>
  * Todo in the future we need to implement reconnection implementation if arduino is disconnected
  */
-@Service
+@Component
+@Setter
 public class GloveListener implements SerialPortEventListener {
 
     private static final Logger log = LogManager.getLogger(TheHand.class);
@@ -34,16 +45,22 @@ public class GloveListener implements SerialPortEventListener {
 
     private final SerialPort serialPort;
     private final ScheduledExecutorService scheduler;
-    private final StringBuilder buffer = new StringBuilder();
-
+    private final ApplicationEventPublisher eventPublisher;
+//    private final Updater updater;
 
     @Value("${serial.port.refresh-rate:16}")
     private int refreshRate;
 
-    public GloveListener() {
+    public GloveListener(ApplicationEventPublisher eventPublisher) {
         this.serialPort = new SerialPort(PORT_NAME);
         scheduler = Executors.newScheduledThreadPool(1);
+        this.eventPublisher = eventPublisher;
     }
+
+//    @PostConstruct
+//    public void init() {
+//        this.setDataListener(updater::processMpuData);
+//    }
 
     /**
      * After this object is created via Spring Boot and all dependencies are injected, it starts a scheduled task
@@ -109,21 +126,19 @@ public class GloveListener implements SerialPortEventListener {
     public void serialEvent(SerialPortEvent event) {
         if (event.isRXCHAR()) {
             try {
-                String data = serialPort.readString();
-                if (data != null) {
-                    buffer.append(data);
-                    int newlineIndex = buffer.indexOf("\n"); // Check if we have received a complete line
-                    while (newlineIndex != -1) {
-                        String line = buffer.substring(0, newlineIndex).trim(); // Extract the full line until the newline character
-                        buffer.delete(0, newlineIndex + 1); // Remove the processed line from the buffer
+                // Read binary data from serial port
+                byte[] data = serialPort.readBytes();
 
-                        log.info("Received line: {}", line);
+                if (data != null && data.length >= 12) {  // Check if we have enough data (12 bytes = 6 values * 2 bytes each)
+                    byte address = data[0];
+                    ByteBuffer buffer = ByteBuffer.wrap(data, 1, data.length - 1); //A byte buffer is used to improve performance when writing a stream of data
 
-                        processData(line);
+                    Mpu6050 mpuData = readFromBytes(buffer, address);
+//                    MpuUtils.angles(mpuData);
 
-                        // Check if there's more data left in the buffer
-                        newlineIndex = buffer.indexOf("\n");
-                    }
+                    onDataReceived(mpuData);
+
+//                    processData(mpuData.toString());
                 }
             } catch (SerialPortException e) {
                 log.error("Error reading from serial port", e);
@@ -131,10 +146,31 @@ public class GloveListener implements SerialPortEventListener {
         }
     }
 
+    public void onDataReceived(Mpu6050 data) {
+        log.info("Publishinf Data {}", data);
+        GloveEvent event = new GloveEvent(this, data);
+        eventPublisher.publishEvent(event);
+    }
+
     /**
      * This is a mock processing method that will be implemented in the future
      */
     private void processData(String line) {
         log.info("MOCK PROCESSING: {}", line);
+    }
+
+    private Mpu6050 readFromBytes(ByteBuffer buffer, byte address) {
+        int ax = buffer.getShort();
+        int ay = buffer.getShort();
+        int az = buffer.getShort();
+        int gx = buffer.getShort();
+        int gy = buffer.getShort();
+        int gz = buffer.getShort();
+
+        return new Mpu6050(
+                Integer.toHexString(address & 0xFF),  // MPU5060 ADDRESS
+                ax, ay, az, gx, gy, gz,
+                LocalDateTime.now()  // Use the current timestamp
+        );
     }
 }
