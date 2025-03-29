@@ -1,5 +1,6 @@
 package tv.toner.listener;
 
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
@@ -41,6 +42,8 @@ public class GloveListener implements SerialPortEventListener {
     private final SerialPort serialPort;
     private final ScheduledExecutorService scheduler;
     private final ApplicationEventPublisher eventPublisher;
+
+    private Mpu6050 lastValidMpuData = null;
 
     @Value("${serial.port.refresh-rate:16}")
     private int refreshRate;
@@ -123,6 +126,7 @@ public class GloveListener implements SerialPortEventListener {
                     ByteBuffer buffer = ByteBuffer.wrap(data, 1, data.length - 1); //A byte buffer is used to improve performance when writing a stream of data
 
                     Mpu6050 mpuData = readFromBytes(buffer, address);
+                    lastValidMpuData = mpuData;
 
                     onDataReceived(mpuData);
 
@@ -140,17 +144,39 @@ public class GloveListener implements SerialPortEventListener {
     }
 
     private Mpu6050 readFromBytes(ByteBuffer buffer, byte address) {
-        int ax = buffer.getShort();
-        int ay = buffer.getShort();
-        int az = buffer.getShort();
-        int gx = buffer.getShort();
-        int gy = buffer.getShort();
-        int gz = buffer.getShort();
+        try {
 
-        return new Mpu6050(
-                Integer.toHexString(address & 0xFF),  // MPU5060 ADDRESS
-                ax, ay, az, gx, gy, gz,
-                LocalDateTime.now()  // Use the current timestamp
-        );
+            if (buffer.remaining() < 12) {  // 6 values * 2 bytes each
+                log.warn("[MPU6050] Insufficient data in buffer. Expected 12 bytes, but got {}", buffer.remaining());
+                return getLastValidMpuData(address);  // Return the previous valid data
+            }
+            int ax = buffer.getShort();
+            int ay = buffer.getShort();
+            int az = buffer.getShort();
+            int gx = buffer.getShort();
+            int gy = buffer.getShort();
+            int gz = buffer.getShort();
+
+            return new Mpu6050(
+                    Integer.toHexString(address & 0xFF),  // MPU5060 ADDRESS
+                    ax, ay, az, gx, gy, gz,
+                    LocalDateTime.now()
+            );
+        } catch (BufferUnderflowException e) {
+            log.error("[MPU6050] Buffer underflow error while reading sensor data: {}", e.getMessage(), e);
+            return getLastValidMpuData(address);  // Return the last valid data
+        }
+    }
+
+    private Mpu6050 getLastValidMpuData(byte address) {
+        if (lastValidMpuData != null) {
+            return lastValidMpuData;
+        } else {
+            return new Mpu6050(
+                    Integer.toHexString(address & 0xFF),
+                    0, 0, 0, 0, 0, 0,
+                    LocalDateTime.now()
+            );
+        }
     }
 }
