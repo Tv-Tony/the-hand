@@ -17,7 +17,7 @@ import lombok.Getter;
  *
  */
 @Component
-public class ChartUtil {
+public class AngleChartDataUtil {
 
     private final XYChart.Series<Number, Number> rawDataSeries;
     private final XYChart.Series<Number, Number> filteredDataSeries;
@@ -25,13 +25,14 @@ public class ChartUtil {
     @Getter
     private LineChart<Number, Number> chart;
 
-    private final long startTime = System.currentTimeMillis();;
+    private final long startTime = System.currentTimeMillis();
+    ;
     private final double chartWindowSize = 60.0;  // display a 60-second window
 
     private long lastAxisUpdate = 0;
     private final long axisUpdateInterval = 100; // update every 100ms
 
-    public ChartUtil() {
+    public AngleChartDataUtil() {
         rawDataSeries = new XYChart.Series<>();
         rawDataSeries.setName("Accelerometer Raw Data");
         filteredDataSeries = new XYChart.Series<>();
@@ -53,7 +54,6 @@ public class ChartUtil {
 
     /**
      * Main method that is used by the event listener to process the data onto the chart
-     *
      */
     public void updateChartData(double newValue) {
         double elapsedSec = (System.currentTimeMillis() - startTime) / 1000.0;
@@ -64,6 +64,7 @@ public class ChartUtil {
      * This method is to update the chart in the Java FX thread
      */
     private void updateChart(double value, double elapsedSec) {
+        if (chart == null) return;
         Platform.runLater(() -> {
             rawDataSeries.getData().add(new XYChart.Data<>(elapsedSec, value)); // Add the new data point.
 
@@ -93,6 +94,7 @@ public class ChartUtil {
     }
 
     public void updateFilteredChartData(double newFilteredValue) {
+        if (chart == null) return;
         double elapsedSec = (System.currentTimeMillis() - startTime) / 1000.0;
         Platform.runLater(() -> {
             filteredDataSeries.getData().add(new XYChart.Data<>(elapsedSec, newFilteredValue));

@@ -6,7 +6,9 @@ import org.springframework.stereotype.Component;
 
 import tv.toner.entity.Mpu6050;
 import tv.toner.filter.DigitalSmoothFilter;
-import tv.toner.utils.ChartUtil;
+import tv.toner.utils.AngleChartDataUtil;
+import tv.toner.utils.RawChartDataUtil;
+import tv.toner.utils.MPU6050Utility;
 
 /**
  * This class has an event listener that on new data received by the GloveListener class, we can plot the data,
@@ -18,14 +20,20 @@ import tv.toner.utils.ChartUtil;
 @Component
 public class ChartUpdater implements ApplicationListener<GloveEvent> {
 
-    private final ChartUtil chartUtil;
+    private final RawChartDataUtil rawRawChartDataUtil;
+    private final AngleChartDataUtil angleChartDataUtil;
 
-    DigitalSmoothFilter digitalSmoothFilter;
+    private final DigitalSmoothFilter rawDigitalSmoothFilter;
+
+    private final MPU6050Utility mpuUtility;
 
     @Autowired
-    public ChartUpdater(ChartUtil chartUtil) {
-        this.chartUtil = chartUtil;
-        this.digitalSmoothFilter = new DigitalSmoothFilter(10, 10);
+    public ChartUpdater(RawChartDataUtil rawRawChartDataUtil, AngleChartDataUtil angleChartDataUtil) {
+        this.rawRawChartDataUtil = rawRawChartDataUtil;
+        this.angleChartDataUtil = angleChartDataUtil;
+        this.rawDigitalSmoothFilter = new DigitalSmoothFilter(10, 10);
+        mpuUtility = new MPU6050Utility();
+        mpuUtility.setCalibrationPoints(33000, 22000, 6000);
     }
 
     @Override
@@ -33,9 +41,14 @@ public class ChartUpdater implements ApplicationListener<GloveEvent> {
         Mpu6050 mpu = event.getData();
         if (mpu == null)
             return;
-        chartUtil.updateChartData(mpu.getAx());
+        rawRawChartDataUtil.updateChartData(mpu.getAx());
+        Mpu6050 smoothReading = rawDigitalSmoothFilter.filter(mpu);
+        rawRawChartDataUtil.updateFilteredChartData(smoothReading.getAx());
 
-        Mpu6050 smoothReading = digitalSmoothFilter.filter(mpu);
-        chartUtil.updateFilteredChartData(smoothReading.getAx());
+        if (smoothReading == null)
+            return;
+
+        angleChartDataUtil.updateChartData(mpuUtility.getXAngleFromRaw(mpu.getAx()));
+        angleChartDataUtil.updateFilteredChartData(mpuUtility.getXAngleFromRaw(smoothReading.getAx()));
     }
 }
