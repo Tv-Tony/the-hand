@@ -2,14 +2,17 @@ package tv.toner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import tv.toner.utils.ChartUtil;
 
 @SpringBootApplication
 public class TheHand extends Application {
@@ -30,21 +33,22 @@ public class TheHand extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/open-view.fxml"));
+            // Load the main view FXML that includes hand-view and chart-view
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/main-view.fxml"));
             loader.setControllerFactory(springContext::getBean);
+            Parent root = loader.load();
 
-            Scene scene = new Scene(loader.load());
+            Scene scene = new Scene(root);
             primaryStage.setScene(scene);
+            primaryStage.setTitle("The Hand");
             primaryStage.show();
         } catch (Exception e) {
-            log.error("Error loading FXML file");
+            log.error("Error loading FXML file", e);
         }
-
     }
 
     @Override
     public void stop() {
-        // Shut down Spring when JavaFX closes
         if (springContext != null) {
             springContext.close();
         }
