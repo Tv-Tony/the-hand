@@ -23,16 +23,12 @@ public class Mpu6050 {
     /**
      * Accelerometer Data
      */
-    private int ax;
-    private int ay;
-    private int az;
+    private int ax, ay, az;
 
     /**
      * Gyroscope Data
      */
-    private int gx;
-    private int gy;
-    private int gz;
+    private int gx, gy, gz;
 
     /**
      * Timestamp of when data was collected

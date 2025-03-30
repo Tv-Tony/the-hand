@@ -20,6 +20,7 @@ import lombok.Getter;
 public class ChartUtil {
 
     private final XYChart.Series<Number, Number> rawDataSeries;
+    private final XYChart.Series<Number, Number> filteredDataSeries;
 
     @Getter
     private LineChart<Number, Number> chart;
@@ -33,6 +34,8 @@ public class ChartUtil {
     public ChartUtil() {
         rawDataSeries = new XYChart.Series<>();
         rawDataSeries.setName("Accelerometer Raw Data");
+        filteredDataSeries = new XYChart.Series<>();
+        filteredDataSeries.setName("Accelerometer Filtered Data");
     }
 
     /**
@@ -42,6 +45,9 @@ public class ChartUtil {
         this.chart = chart;
         if (!chart.getData().contains(rawDataSeries)) {
             chart.getData().add(rawDataSeries);
+        }
+        if (!chart.getData().contains(filteredDataSeries)) {
+            chart.getData().add(filteredDataSeries);
         }
     }
 
@@ -83,6 +89,14 @@ public class ChartUtil {
 
                 lastAxisUpdate = now;
             }
+        });
+    }
+
+    public void updateFilteredChartData(double newFilteredValue) {
+        double elapsedSec = (System.currentTimeMillis() - startTime) / 1000.0;
+        Platform.runLater(() -> {
+            filteredDataSeries.getData().add(new XYChart.Data<>(elapsedSec, newFilteredValue));
+            // Optionally, remove old points or update axis bounds similarly
         });
     }
 }

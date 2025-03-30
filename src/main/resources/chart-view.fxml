@@ -32,17 +32,19 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 
-<?import javafx.scene.chart.CategoryAxis?>
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
-<?import javafx.scene.layout.Pane?>
 
-<Pane fx:controller="tv.toner.controller.ChartViewController"
-      maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-      prefHeight="400.0" prefWidth="600.0"
-      xmlns="http://javafx.com/javafx/23.0.1"
-      xmlns:fx="http://javafx.com/fxml/1">
-    <LineChart fx:id="lineChart" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="600.0">
+<?import javafx.scene.layout.AnchorPane?>
+<AnchorPane fx:controller="tv.toner.controller.ChartViewController"
+            prefHeight="400.0" prefWidth="600.0"
+            xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns:fx="http://javafx.com/fxml/1">
+    <LineChart fx:id="lineChart"
+               AnchorPane.topAnchor="0.0"
+               AnchorPane.bottomAnchor="0.0"
+               AnchorPane.leftAnchor="0.0"
+               AnchorPane.rightAnchor="0.0">
         <xAxis>
             <NumberAxis fx:id="xAxis" side="BOTTOM"/>
         </xAxis>
@@ -50,6 +52,6 @@
             <NumberAxis fx:id="yAxis" side="LEFT"/>
         </yAxis>
     </LineChart>
-</Pane>
+</AnchorPane>
 
 

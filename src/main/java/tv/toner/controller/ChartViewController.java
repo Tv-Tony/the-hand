@@ -89,8 +89,8 @@ public class ChartViewController implements Initializable {
         this.yAxis = (NumberAxis) lineChart.getYAxis();
         yAxis.setLabel("Accelerometer Value");
         yAxis.setAutoRanging(false); // Fixed Y-axis range
-        yAxis.setLowerBound(5000);
-        yAxis.setUpperBound(30000);
-        yAxis.setTickUnit(1000);
+        yAxis.setLowerBound(0);
+        yAxis.setUpperBound(34000);
+        yAxis.setTickUnit(2000);
     }
 }
