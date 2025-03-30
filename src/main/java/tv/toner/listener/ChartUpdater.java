@@ -5,6 +5,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import tv.toner.entity.Mpu6050;
+import tv.toner.filter.DigitalSmoothFilter;
 import tv.toner.utils.ChartUtil;
 
 /**
@@ -19,9 +20,12 @@ public class ChartUpdater implements ApplicationListener<GloveEvent> {
 
     private final ChartUtil chartUtil;
 
+    DigitalSmoothFilter digitalSmoothFilter;
+
     @Autowired
     public ChartUpdater(ChartUtil chartUtil) {
         this.chartUtil = chartUtil;
+        this.digitalSmoothFilter = new DigitalSmoothFilter(10, 10);
     }
 
     @Override
@@ -30,5 +34,8 @@ public class ChartUpdater implements ApplicationListener<GloveEvent> {
         if (mpu == null)
             return;
         chartUtil.updateChartData(mpu.getAx());
+
+        Mpu6050 smoothReading = digitalSmoothFilter.filter(mpu);
+        chartUtil.updateFilteredChartData(smoothReading.getAx());
     }
 }

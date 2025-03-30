@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.javatuples.Triplet;
 
-import tv.toner.TheHand;
 import tv.toner.entity.Mpu6050;
 
 public class MpuUtils {
@@ -13,6 +12,8 @@ public class MpuUtils {
 
     private final static int MIN_VALUE = -1024;
     private final static int MAX_VALUE = 512;
+
+    private static int logKeeper = 0;
 
     /**
      * Triplet of angles
@@ -40,11 +41,18 @@ public class MpuUtils {
         return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
     }
 
+    /**
+     * Everytime We Receive 10 data points from the mpu5060 we log a new once, in order not to clutter the console
+     */
     private static void logSensorData(Mpu6050 mpu, int xAng, int yAng, int zAng, double x, double y, double z) {
-        log.info("[MPU6050] Raw: Ax={}, Ay={}, Az={} Gx={}, Gy={}, Gz={} | Mapped: X={}°, Y={}°, Z={}° | Angles: Roll={}, Pitch={}, Yaw={}",
-                mpu.getAx(), mpu.getAy(), mpu.getAz(),
-                mpu.getGx(), mpu.getGy(), mpu.getGz(),
-                xAng, yAng, zAng,
-                String.format("%.2f", x), String.format("%.2f", y), String.format("%.2f", z));
+        if (logKeeper == 10) {
+            log.info("[MPU6050] Raw: Ax={}, Ay={}, Az={} Gx={}, Gy={}, Gz={} | Mapped: X={}°, Y={}°, Z={}° | Angles: Roll={}, Pitch={}, Yaw={}",
+                    mpu.getAx(), mpu.getAy(), mpu.getAz(),
+                    mpu.getGx(), mpu.getGy(), mpu.getGz(),
+                    xAng, yAng, zAng,
+                    String.format("%.2f", x), String.format("%.2f", y), String.format("%.2f", z));
+            logKeeper = 0;
+        }
+        logKeeper++;
     }
 }
