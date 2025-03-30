@@ -32,17 +32,26 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.Tab?>
-<TabPane xmlns="http://javafx.com/javafx/23.0.1"
-         xmlns:fx="http://javafx.com/fxml/1">
-    <Tab text="Hand View">
-        <fx:include source="/hand-view.fxml"/>
-    </Tab>
-    <Tab text="Raw Data View">
-        <fx:include source="/raw-chart-view.fxml"/>
-    </Tab>
-    <Tab text="Angle View">
-        <fx:include source="/angle-chart-view.fxml"/>
-    </Tab>
-</TabPane>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+
+<?import javafx.scene.layout.AnchorPane?>
+<AnchorPane fx:controller="tv.toner.controller.AngleChartViewController"
+            prefHeight="400.0" prefWidth="600.0"
+            xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns:fx="http://javafx.com/fxml/1">
+    <LineChart fx:id="lineChart"
+               AnchorPane.topAnchor="0.0"
+               AnchorPane.bottomAnchor="0.0"
+               AnchorPane.leftAnchor="0.0"
+               AnchorPane.rightAnchor="0.0">
+        <xAxis>
+            <NumberAxis fx:id="xAxis" side="BOTTOM"/>
+        </xAxis>
+        <yAxis>
+            <NumberAxis fx:id="yAxis" side="LEFT"/>
+        </yAxis>
+    </LineChart>
+</AnchorPane>
+
+

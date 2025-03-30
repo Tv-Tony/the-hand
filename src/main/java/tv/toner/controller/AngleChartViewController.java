@@ -3,24 +3,17 @@ package tv.toner.controller;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.util.StringConverter;
-import tv.toner.utils.ChartUtil;
+import tv.toner.utils.AngleChartDataUtil;
 
-/**
- * This controller is responsible for displaying a chart in one of the tabs
- *
- * @author Antonin Vychodil <a_vychodil [at] utb.cz>
- *
- */
-@Component
-public class ChartViewController implements Initializable {
+@Controller
+public class AngleChartViewController implements Initializable {
 
     @FXML
     public NumberAxis xAxis;
@@ -31,11 +24,10 @@ public class ChartViewController implements Initializable {
     @FXML
     private LineChart<Number, Number> lineChart;
 
-    private final ChartUtil chartUtil;
+    private final AngleChartDataUtil angleChartUtil;
 
-    @Autowired
-    public ChartViewController(ChartUtil chartUtil) {
-        this.chartUtil = chartUtil;
+    public AngleChartViewController(AngleChartDataUtil angleChartUtil) {
+        this.angleChartUtil = angleChartUtil;
     }
 
     @Override
@@ -44,11 +36,11 @@ public class ChartViewController implements Initializable {
         initXAxis();
         initYAxis();
 
-        chartUtil.initializeChart(lineChart); // Initialize the chart and store the reference in ChartUtil
+        angleChartUtil.initializeChart(lineChart); // Initialize the chart and store the reference in ChartUtil
     }
 
     private void chartProperties() {
-        lineChart.setTitle("Accelerometer Data (60-second Rolling Window)");
+        lineChart.setTitle("Angle Data (60-second Rolling Window)");
         lineChart.setAnimated(true);        // Disable animations for real-time updates
         lineChart.setCreateSymbols(false);   // Draw only lines for clarity
     }
@@ -87,10 +79,10 @@ public class ChartViewController implements Initializable {
      */
     private void initYAxis() {
         this.yAxis = (NumberAxis) lineChart.getYAxis();
-        yAxis.setLabel("Accelerometer Value");
+        yAxis.setLabel("Angle In Degrees");
         yAxis.setAutoRanging(false); // Fixed Y-axis range
-        yAxis.setLowerBound(0);
-        yAxis.setUpperBound(34000);
-        yAxis.setTickUnit(2000);
+        yAxis.setLowerBound(-180);
+        yAxis.setUpperBound(180);
+        yAxis.setTickUnit(5);
     }
 }

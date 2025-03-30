@@ -18,6 +18,7 @@ import javafx.scene.Parent;
 import tv.toner.defs.JointDef;
 import tv.toner.entity.Mpu6050;
 import tv.toner.utils.EMAFilter;
+import tv.toner.utils.MPU6050Utility;
 import tv.toner.utils.MpuUtils;
 
 @Component
@@ -31,9 +32,13 @@ public class Updater implements ApplicationListener<GloveEvent> {
 
     Triplet<Double, Double, Double> firstAngle = null;
 
+    private MPU6050Utility utility;
+
     public void initialize(List<Parent> forestRight, PolygonMeshView skinningRight) {
         this.forestRight = forestRight;
         this.skinningRight = skinningRight;
+        this.utility = new MPU6050Utility();
+        utility.setCalibrationPoints(33000, 22000, 6000);
     }
 
     @Override
@@ -61,28 +66,28 @@ public class Updater implements ApplicationListener<GloveEvent> {
 
         Platform.runLater(() -> {
 
-            middleMetacarpal.rx.setAngle((Double) latestAngle.getValue(0) - firstAngle.getValue0());
+            middleMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                middleMetacarpal.ry.setAngle(latestValue.getAngleY());
 
-            indexMetacarpal.rx.setAngle((Double) latestAngle.getValue(0) - firstAngle.getValue0());
+            indexMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                indexMetacarpal.ry.setAngle(latestValue.getAngleY());
 
-            ringMetacarpal.rx.setAngle((Double) latestAngle.getValue(0) - firstAngle.getValue0());
+            ringMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                ringMetacarpal.ry.setAngle(latestValue.getAngleY());
 
-            pinkyMetacarpal.rx.setAngle((Double) latestAngle.getValue(0) - firstAngle.getValue0());
+            pinkyMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                pinkyMetacarpal.ry.setAngle(latestValue.getAngleY());
 
-            middleProximal.rx.setAngle((Double) latestAngle.getValue(0) - firstAngle.getValue0());
+            middleProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                middleProximal.ry.setAngle(latestValue.getAngleY());
 
-            indexProximal.rx.setAngle((Double) latestAngle.getValue(0) - firstAngle.getValue0());
+            indexProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                indexProximal.ry.setAngle(latestValue.getAngleY());
 
-            ringProximal.rx.setAngle((Double) latestAngle.getValue(0) - firstAngle.getValue0());
+            ringProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                ringProximal.ry.setAngle(latestValue.getAngleY());
 
-            pinkyProximal.rx.setAngle((Double) latestAngle.getValue(0) - firstAngle.getValue0());
+            pinkyProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                pinkyProximal.ry.setAngle(latestValue.getAngleY());
 
             lastHandPosition.set(latestValue); // Update lastHandPosition with the new value
