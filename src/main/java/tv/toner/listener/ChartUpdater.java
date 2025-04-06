@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import tv.toner.entity.Mpu6050;
 import tv.toner.filter.DigitalSmoothFilter;
+import tv.toner.manager.SensorManager;
 import tv.toner.utils.AngleChartDataUtil;
 import tv.toner.utils.RawChartDataUtil;
 import tv.toner.utils.MPU6050Utility;
@@ -24,21 +25,23 @@ public class ChartUpdater implements ApplicationListener<GloveEvent> {
     private final AngleChartDataUtil angleChartDataUtil;
 
     private final DigitalSmoothFilter rawDigitalSmoothFilter;
+    private final SensorManager sensorManager;
 
     private final MPU6050Utility mpuUtility;
 
     @Autowired
-    public ChartUpdater(RawChartDataUtil rawRawChartDataUtil, AngleChartDataUtil angleChartDataUtil) {
+    public ChartUpdater(RawChartDataUtil rawRawChartDataUtil, AngleChartDataUtil angleChartDataUtil, SensorManager sensorManager) {
         this.rawRawChartDataUtil = rawRawChartDataUtil;
         this.angleChartDataUtil = angleChartDataUtil;
         this.rawDigitalSmoothFilter = new DigitalSmoothFilter(10, 10);
         mpuUtility = new MPU6050Utility();
         mpuUtility.setCalibrationPoints(33000, 22000, 6000);
+        this.sensorManager = sensorManager;
     }
 
     @Override
     public void onApplicationEvent(GloveEvent event) {
-        Mpu6050 mpu = event.getData();
+        Mpu6050 mpu = sensorManager.getLatestData("0");
         if (mpu == null)
             return;
         rawRawChartDataUtil.updateChartData(mpu.getAx());

@@ -1,11 +1,14 @@
 package tv.toner.listener;
 
-import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -23,6 +26,7 @@ import jssc.SerialPortException;
 import lombok.Setter;
 import tv.toner.TheHand;
 import tv.toner.entity.Mpu6050;
+import tv.toner.manager.SensorManager;
 
 /**
  * Serial Port Listener, used to establish connection with Arduino Glove
@@ -37,21 +41,32 @@ public class GloveListener implements SerialPortEventListener {
     private static final Logger log = LogManager.getLogger(TheHand.class);
     private final static String PORT_NAME = "COM8";
     private final static Long RECONNECT_DELAY = 10000L;
-    private static final int BAUD_RATE = 38400;
+    private static final int BAUD_RATE = 115200;
+
+    private final int sensorCount = 2;
+    private final Map<String, Mpu6050> pendingData = new ConcurrentHashMap<>();
+
+    private static final Pattern LINE_PATTERN = Pattern.compile(
+            "\\$\\s*ID:\\s*(\\d+)\\s*\\|\\s*Tms:\\s*(\\d+)\\s*\\|\\s*acc:\\s*(-?\\d+),\\s*(-?\\d+),\\s*(-?\\d+)\\s*\\|\\s*rot:\\s*(-?\\d+),\\s*(-?\\d+),\\s*(-?\\d+)\\s*\\|\\s*rpy:\\s*(-?\\d+(?:\\.\\d+)?),\\s*(-?\\d+(?:\\.\\d+)?),\\s*(-?\\d+(?:\\.\\d+)?)"
+    );
+    private final StringBuilder buffer = new StringBuilder();
 
     private final SerialPort serialPort;
     private final ScheduledExecutorService scheduler;
     private final ApplicationEventPublisher eventPublisher;
+
+    private final SensorManager sensorManager;
 
     private Mpu6050 lastValidMpuData = null;
 
     @Value("${serial.port.refresh-rate:16}")
     private int refreshRate;
 
-    public GloveListener(ApplicationEventPublisher eventPublisher) {
+    public GloveListener(ApplicationEventPublisher eventPublisher, SensorManager sensorManager) {
         this.serialPort = new SerialPort(PORT_NAME);
         scheduler = Executors.newScheduledThreadPool(1);
         this.eventPublisher = eventPublisher;
+        this.sensorManager = sensorManager;
     }
 
     /**
@@ -118,18 +133,18 @@ public class GloveListener implements SerialPortEventListener {
     public void serialEvent(SerialPortEvent event) {
         if (event.isRXCHAR()) {
             try {
-                // Read binary data from serial port
                 byte[] data = serialPort.readBytes();
-
-                if (data != null && data.length >= 12) {  // Check if we have enough data (12 bytes = 6 values * 2 bytes each)
-                    byte address = data[0];
-                    ByteBuffer buffer = ByteBuffer.wrap(data, 1, data.length - 1); //A byte buffer is used to improve performance when writing a stream of data
-
-                    Mpu6050 mpuData = readFromBytes(buffer, address);
-                    lastValidMpuData = mpuData;
-
-                    onDataReceived(mpuData);
-
+                if (data != null) {
+                    for (byte b : data) {
+                        char c = (char) b;
+                        if (c == '\n') {
+                            String line = buffer.toString().trim();
+                            buffer.setLength(0);
+                            processLine(line);
+                        } else {
+                            buffer.append(c);
+                        }
+                    }
                 }
             } catch (SerialPortException e) {
                 log.error("Error reading from serial port", e);
@@ -138,35 +153,54 @@ public class GloveListener implements SerialPortEventListener {
     }
 
     public void onDataReceived(Mpu6050 data) {
-        log.debug("Publishing Data {}", data);
-        GloveEvent event = new GloveEvent(this, data);
-        eventPublisher.publishEvent(event);
-    }
+        log.debug("Received Data {}", data);
 
-    private Mpu6050 readFromBytes(ByteBuffer buffer, byte address) {
-        try {
+        // ✅ Store in SensorManager immediately
+        sensorManager.updateSensorData(data.getBitAddress(), data);
 
-            if (buffer.remaining() < 12) {  // 6 values * 2 bytes each
-                log.warn("[MPU6050] Insufficient data in buffer. Expected 12 bytes, but got {}", buffer.remaining());
-                return getLastValidMpuData(address);  // Return the previous valid data
-            }
-            int ax = buffer.getShort();
-            int ay = buffer.getShort();
-            int az = buffer.getShort();
-            int gx = buffer.getShort();
-            int gy = buffer.getShort();
-            int gz = buffer.getShort();
+        // ✅ Store in temporary map for sync
+        pendingData.put(data.getBitAddress(), data);
 
-            return new Mpu6050(
-                    Integer.toHexString(address & 0xFF),  // MPU5060 ADDRESS
-                    ax, ay, az, gx, gy, gz,
-                    LocalDateTime.now()
-            );
-        } catch (BufferUnderflowException e) {
-            log.error("[MPU6050] Buffer underflow error while reading sensor data: {}", e.getMessage(), e);
-            return getLastValidMpuData(address);  // Return the last valid data
+        // ✅ Check if we received all sensor updates
+        if (pendingData.size() == sensorCount) {
+            log.debug("Publishing GloveEvent for {} sensors", sensorCount);
+
+            // Create GloveEvent with a snapshot of the current sensor data
+            GloveEvent event = new GloveEvent(this, new HashMap<>(pendingData));
+
+            // Publish the event
+            eventPublisher.publishEvent(event);
+
+            // Clear pending buffer
+            pendingData.clear();
         }
     }
+
+    private void processLine(String line) {
+        Matcher matcher = LINE_PATTERN.matcher(line);
+        if (matcher.matches()) {
+
+            Mpu6050 mpu = new Mpu6050(
+                    matcher.group(1),
+                    Integer.parseInt(matcher.group(3)),
+                    Integer.parseInt(matcher.group(4)),
+                    Integer.parseInt(matcher.group(5)),
+                    Integer.parseInt(matcher.group(6)),
+                    Integer.parseInt(matcher.group(7)),
+                    Integer.parseInt(matcher.group(8)),
+                    Float.parseFloat(matcher.group(9)),
+                    Float.parseFloat(matcher.group(10)),
+                    Float.parseFloat(matcher.group(11)),
+                    LocalDateTime.now()
+            );
+
+            lastValidMpuData = mpu;
+            onDataReceived(mpu);
+        } else {
+            log.warn("Invalid line format: {}", line);
+        }
+    }
+
 
     private Mpu6050 getLastValidMpuData(byte address) {
         if (lastValidMpuData != null) {
