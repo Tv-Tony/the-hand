@@ -31,9 +31,25 @@ public class Mpu6050 {
     private int gx, gy, gz;
 
     /**
+     * Calculated Pitch Roll Yaw
+     */
+    private double pitch, roll, yaw;
+
+    /**
      * Timestamp of when data was collected
      */
     private LocalDateTime timestamp;
+
+    public Mpu6050(String bitAddress, int ax, int ay, int az, int gx, int gy, int gz, LocalDateTime timestamp) {
+        this.gz = gz;
+        this.bitAddress = bitAddress;
+        this.ax = ax;
+        this.ay = ay;
+        this.az = az;
+        this.gx = gx;
+        this.gy = gy;
+        this.timestamp = timestamp;
+    }
 
     @Override
     public boolean equals(Object o) {
