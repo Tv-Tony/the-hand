@@ -43,7 +43,7 @@ public class GloveListener implements SerialPortEventListener {
     private final static Long RECONNECT_DELAY = 10000L;
     private static final int BAUD_RATE = 115200;
 
-    private final int sensorCount = 2;
+    private final int sensorCount = 3;
     private final Map<String, Mpu6050> pendingData = new ConcurrentHashMap<>();
 
     private static final Pattern LINE_PATTERN = Pattern.compile(
@@ -56,8 +56,6 @@ public class GloveListener implements SerialPortEventListener {
     private final ApplicationEventPublisher eventPublisher;
 
     private final SensorManager sensorManager;
-
-    private Mpu6050 lastValidMpuData = null;
 
     @Value("${serial.port.refresh-rate:16}")
     private int refreshRate;
@@ -193,24 +191,9 @@ public class GloveListener implements SerialPortEventListener {
                     Float.parseFloat(matcher.group(11)),
                     LocalDateTime.now()
             );
-
-            lastValidMpuData = mpu;
             onDataReceived(mpu);
         } else {
             log.warn("Invalid line format: {}", line);
-        }
-    }
-
-
-    private Mpu6050 getLastValidMpuData(byte address) {
-        if (lastValidMpuData != null) {
-            return lastValidMpuData;
-        } else {
-            return new Mpu6050(
-                    Integer.toHexString(address & 0xFF),
-                    0, 0, 0, 0, 0, 0,
-                    LocalDateTime.now()
-            );
         }
     }
 }
