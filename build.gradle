@@ -51,6 +51,11 @@ dependencies {
 
     // Java Tuples
     implementation("org.javatuples:javatuples:1.2")
+
+    // Aop for logging
+    implementation 'org.springframework:spring-aop'
+    implementation 'org.aspectj:aspectjweaver'
+
 }
 
 test {
