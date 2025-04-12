@@ -19,9 +19,7 @@ import javafx.scene.Parent;
 import tv.toner.defs.JointDef;
 import tv.toner.entity.Mpu6050;
 import tv.toner.manager.SensorManager;
-import tv.toner.utils.EMAFilter;
 import tv.toner.utils.MPU6050Utility;
-import tv.toner.utils.MpuUtils;
 
 @Component
 public class Updater implements ApplicationListener<GloveEvent> {
@@ -53,57 +51,50 @@ public class Updater implements ApplicationListener<GloveEvent> {
     @Override
     public void onApplicationEvent(GloveEvent event) {
 
-        Mpu6050 sensorZero = sensorManager.getLatestData("0");
-        Mpu6050 sensorOne = sensorManager.getLatestData("1");
+        Mpu6050 latestValue = sensorManager.getLatestData("0");
 
-        Mpu6050 latestValue = EMAFilter.applyFilter(sensorZero, 0.2, lastHandPosition.get());
+        try {
+            Joint middleMetacarpal = (Joint) forestRight.get(0).lookup(JointDef.MIDDLE_METACARPAL.getBonePattern());
+            Joint indexMetacarpal = (Joint) forestRight.get(0).lookup(JointDef.INDEX_METACARPAL.getBonePattern());
+            Joint ringMetacarpal = (Joint) forestRight.get(0).lookup(JointDef.RING_METACARPAL.getBonePattern());
+            Joint pinkyMetacarpal = (Joint) forestRight.get(0).lookup(JointDef.PINKY_METACARPAL.getBonePattern());
 
-        if (firstAngle == null)
-            this.firstAngle = MpuUtils.angles(latestValue);
+            Joint middleProximal = (Joint) forestRight.get(0).lookup(JointDef.MIDDLE_PROXIMAL.getBonePattern());
+            Joint indexProximal = (Joint) forestRight.get(0).lookup(JointDef.INDEX_PROXIMAL.getBonePattern());
+            Joint ringProximal = (Joint) forestRight.get(0).lookup(JointDef.RING_PROXIMAL.getBonePattern());
+            Joint pinkyProximal = (Joint) forestRight.get(0).lookup(JointDef.PINKY_PROXIMAL.getBonePattern());
 
-        Triplet<Double, Double, Double> latestAngle = MpuUtils.angles(latestValue);
+            Platform.runLater(() -> {
 
-        log.debug("Angles before filter: {}", latestValue);
-        log.debug("Filtered angles: {}", sensorZero);
-
-        Joint middleMetacarpal = (Joint) forestRight.get(0).lookup(JointDef.MIDDLE_METACARPAL.getBonePattern());
-        Joint indexMetacarpal = (Joint) forestRight.get(0).lookup(JointDef.INDEX_METACARPAL.getBonePattern());
-        Joint ringMetacarpal = (Joint) forestRight.get(0).lookup(JointDef.RING_METACARPAL.getBonePattern());
-        Joint pinkyMetacarpal = (Joint) forestRight.get(0).lookup(JointDef.PINKY_METACARPAL.getBonePattern());
-
-        Joint middleProximal = (Joint) forestRight.get(0).lookup(JointDef.MIDDLE_PROXIMAL.getBonePattern());
-        Joint indexProximal = (Joint) forestRight.get(0).lookup(JointDef.INDEX_PROXIMAL.getBonePattern());
-        Joint ringProximal = (Joint) forestRight.get(0).lookup(JointDef.RING_PROXIMAL.getBonePattern());
-        Joint pinkyProximal = (Joint) forestRight.get(0).lookup(JointDef.PINKY_PROXIMAL.getBonePattern());
-
-        Platform.runLater(() -> {
-
-            middleMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
+                middleMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                middleMetacarpal.ry.setAngle(latestValue.getAngleY());
 
-            indexMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
+                indexMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                indexMetacarpal.ry.setAngle(latestValue.getAngleY());
 
-            ringMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
+                ringMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                ringMetacarpal.ry.setAngle(latestValue.getAngleY());
 
-            pinkyMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
+                pinkyMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                pinkyMetacarpal.ry.setAngle(latestValue.getAngleY());
 
-            middleProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
+                middleProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                middleProximal.ry.setAngle(latestValue.getAngleY());
 
-            indexProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
+                indexProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                indexProximal.ry.setAngle(latestValue.getAngleY());
 
-            ringProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
+                ringProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                ringProximal.ry.setAngle(latestValue.getAngleY());
 
-            pinkyProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
+                pinkyProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
 //                pinkyProximal.ry.setAngle(latestValue.getAngleY());
 
-            lastHandPosition.set(latestValue); // Update lastHandPosition with the new value
-            ((SkinningMesh) skinningRight.getMesh()).update();
-        });
+                lastHandPosition.set(latestValue); // Update lastHandPosition with the new value
+                ((SkinningMesh) skinningRight.getMesh()).update();
+            });
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+        }
     }
 }
