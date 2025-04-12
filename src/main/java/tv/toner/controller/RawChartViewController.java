@@ -46,9 +46,9 @@ public class RawChartViewController implements Initializable {
         chartManager.initXAxis(xAxis, "Time (s)", 5, 4);
         chartManager.initYAxis(yAxis, "Accelerometer Value", -10000, 34000, 2000);
         chartManager.registerChart(ChartKey.AX_DATA_CHART, lineChart, Arrays.asList(
-                        SeriesDefs.FINGER_ONE,
-                        SeriesDefs.FINGER_TWO,
-                        SeriesDefs.FINGER_THREE
+                        SeriesDefs.FINGER_ONE
+                        ,SeriesDefs.FINGER_TWO
+//                        ,SeriesDefs.FINGER_THREE
                 )); // Initialize the chart and store the reference in ChartUtil
     }
 }

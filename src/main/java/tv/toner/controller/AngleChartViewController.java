@@ -46,9 +46,9 @@ public class AngleChartViewController implements Initializable {
         chartManager.initXAxis(xAxis, "Time (s)", 5, 4);
         chartManager.initYAxis(yAxis, "Angle In Degrees", -180, 180, 5);
         chartManager.registerChart(ChartKey.X_ANGLE_CHART, lineChart, Arrays.asList(
-                SeriesDefs.ANGLE_DATA_FINGER_ONE,
-                SeriesDefs.ANGLE_DATA_FINGER_TWO,
-                SeriesDefs.ANGLE_DATA_FINGER_THREE
+                SeriesDefs.ANGLE_DATA_FINGER_ONE
+                ,SeriesDefs.ANGLE_DATA_FINGER_TWO
+//                ,SeriesDefs.ANGLE_DATA_FINGER_THREE
         ));
     }
 }

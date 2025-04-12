@@ -24,7 +24,6 @@ import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
 import lombok.Setter;
-import tv.toner.TheHand;
 import tv.toner.entity.Mpu6050;
 import tv.toner.manager.SensorManager;
 
@@ -38,8 +37,12 @@ import tv.toner.manager.SensorManager;
 @Setter
 public class GloveListener implements SerialPortEventListener {
 
-    private static final Logger log = LogManager.getLogger(TheHand.class);
-    private final static String PORT_NAME = "COM8";
+    private static final Logger log = LogManager.getLogger(GloveListener.class);
+
+    /**
+     * For Windows "COM8"
+     */
+    private final static String PORT_NAME = "/dev/ttyUSB0";
     private final static Long RECONNECT_DELAY = 10000L;
     private static final int BAUD_RATE = 115200;
 
