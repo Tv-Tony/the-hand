@@ -4,7 +4,7 @@ public enum ChartKey {
 
     DATA_CHART,
 
-    ANGLE_CHART
+    ANGLE_CHART,
 
-    ;
+    SERVO_CHART
 }

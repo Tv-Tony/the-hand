@@ -3,6 +3,7 @@ package tv.toner.listener;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import lombok.NoArgsConstructor;
 import org.javatuples.Triplet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,36 +25,13 @@ import tv.toner.manager.SensorManager;
 import tv.toner.utils.TiltCalculator;
 
 @Component
+@NoArgsConstructor
 public class Updater implements ApplicationListener<ProcessedAngleEvent> {
 
     private static final Logger log = LoggerFactory.getLogger(Updater.class);
 
-    private final DigitalSmoothFilter fingerOneFilter;
-    private final DigitalSmoothFilter fingerTwoFilter;
-    private final DigitalSmoothFilter fingerThreeFilter;
-
-    private final AngleFilter fingerOneAngleFilter;
-    private final AngleFilter fingerTwoAngleFilter;
-    private final AngleFilter fingerThreeAngleFilter;
-
     private List<Parent> forestRight;
     private PolygonMeshView skinningRight;
-
-    private final SensorManager sensorManager;
-
-    @Autowired
-    public Updater(SensorManager sensorManager) {
-        this.sensorManager = sensorManager;
-
-        // Sensor filters (1 per sensor)
-        this.fingerOneFilter = new DigitalSmoothFilter(20, 10);
-        this.fingerTwoFilter = new DigitalSmoothFilter(20, 10);
-        this.fingerThreeFilter = new DigitalSmoothFilter(20, 10);
-
-        this.fingerOneAngleFilter = new AngleFilter(20);
-        this.fingerTwoAngleFilter = new AngleFilter(20);
-        this.fingerThreeAngleFilter = new AngleFilter(20);
-    }
 
     public void initialize(List<Parent> forestRight, PolygonMeshView skinningRight) {
         this.forestRight = forestRight;
