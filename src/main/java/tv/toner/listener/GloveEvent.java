@@ -16,8 +16,4 @@ public class GloveEvent extends ApplicationEvent {
         super(source);
         this.allSensorData = allSensorData;
     }
-
-    public Map<String, Mpu6050> getAllSensorData() {
-        return allSensorData;
-    }
 }
