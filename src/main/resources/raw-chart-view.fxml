@@ -32,26 +32,29 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 
-<?import javafx.scene.chart.LineChart?>
-<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.layout.*?>
 
-<?import javafx.scene.layout.AnchorPane?>
-<AnchorPane fx:controller="tv.toner.controller.RawChartViewController"
-            prefHeight="400.0" prefWidth="600.0"
-            xmlns="http://javafx.com/javafx/23.0.1"
-            xmlns:fx="http://javafx.com/fxml/1">
-    <LineChart fx:id="lineChart"
-               AnchorPane.topAnchor="0.0"
-               AnchorPane.bottomAnchor="0.0"
-               AnchorPane.leftAnchor="0.0"
-               AnchorPane.rightAnchor="0.0">
-        <xAxis>
-            <NumberAxis fx:id="xAxis" side="BOTTOM"/>
-        </xAxis>
-        <yAxis>
-            <NumberAxis fx:id="yAxis" side="LEFT"/>
-        </yAxis>
-    </LineChart>
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tv.toner.controller.RawChartViewController">
+
+    <HBox spacing="10" alignment="CENTER_LEFT" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+        <!-- Chart -->
+        <LineChart fx:id="lineChart" HBox.hgrow="ALWAYS">
+            <xAxis>
+                <NumberAxis side="BOTTOM" fx:id="xAxis" />
+            </xAxis>
+            <yAxis>
+                <NumberAxis fx:id="yAxis" side="LEFT" />
+            </yAxis>
+        </LineChart>
+
+        <!-- VBox wrapper with hard sizing -->
+        <StackPane prefWidth="150.0" minWidth="150.0" maxWidth="150.0" HBox.hgrow="NEVER">
+            <VBox fx:id="toggleBox"
+                  spacing="10"
+                  style="-fx-padding: 10; -fx-background-color: lightgray;" />
+        </StackPane>
+
+    </HBox>
 </AnchorPane>
-
-

@@ -3,21 +3,23 @@ package tv.toner.manager;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.util.StringConverter;
 import tv.toner.defs.ChartKey;
-import tv.toner.defs.SeriesDefs;
+import tv.toner.defs.SeriesDef;
 import tv.toner.utils.ChartUtil;
 
+@Getter
 @Component
 public class ChartManager {
 
     private final ConcurrentHashMap<ChartKey, ChartUtil> chartMap = new ConcurrentHashMap<>();
 
-    public void registerChart(ChartKey chartKey, LineChart<Number, Number> chart, List<SeriesDefs> seriesKeys) {
+    public void registerChart(ChartKey chartKey, LineChart<Number, Number> chart, List<SeriesDef> seriesKeys) {
         ChartUtil chartUtil = new ChartUtil();
         chartUtil.initializeChart(chart, seriesKeys);
         chartMap.put(chartKey, chartUtil);

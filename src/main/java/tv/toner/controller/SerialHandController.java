@@ -11,6 +11,7 @@ import tv.toner.entity.Mpu6050;
 import tv.toner.filter.DigitalSmoothFilter;
 import tv.toner.listener.GloveEvent;
 import tv.toner.manager.SensorManager;
+import tv.toner.utils.ServoUtil;
 import tv.toner.utils.TiltCalculator;
 
 @Component
@@ -18,14 +19,15 @@ public class SerialHandController implements ApplicationListener<GloveEvent> {
 
     private static final Logger log = LogManager.getLogger(SerialHandController.class);
 
-    private static final String PORT_NAME = "/dev/ttyUSB2";
+    private static final String PORT_NAME = "/dev/ttyUSB1";
 
     private final SensorManager sensorManager;
 
     private final DigitalSmoothFilter fingerOneFilter;
     private final DigitalSmoothFilter fingerTwoFilter;
+    private final DigitalSmoothFilter fingerThreeFilter;
 
-    private SerialPort serialPort;
+    private final SerialPort serialPort;
 
     @Autowired
     public SerialHandController(SensorManager sensorManager) {
@@ -34,6 +36,7 @@ public class SerialHandController implements ApplicationListener<GloveEvent> {
         // Sensor filters (1 per sensor)
         this.fingerOneFilter = new DigitalSmoothFilter(20, 10);
         this.fingerTwoFilter = new DigitalSmoothFilter(20, 10);
+        this.fingerThreeFilter =  new DigitalSmoothFilter(20, 10);
 
         this.serialPort = new SerialPort(PORT_NAME);
         try {
@@ -44,9 +47,9 @@ public class SerialHandController implements ApplicationListener<GloveEvent> {
                     SerialPort.STOPBITS_1,
                     SerialPort.PARITY_NONE
             );
-            System.out.println("Serial connection to robotic hand established.");
+            log.info("Serial connection to robotic hand established on port: {}", serialPort.getPortName());
         } catch (SerialPortException e) {
-            e.printStackTrace();
+            log.warn("Unable to connect to robotic hand on port {}. Is the device connected? Retrying will continue...", serialPort.getPortName());
         }
     }
 
@@ -55,29 +58,28 @@ public class SerialHandController implements ApplicationListener<GloveEvent> {
 
         Mpu6050 mpuOne = sensorManager.getLatestData("0");
         Mpu6050 mpuTwo = sensorManager.getLatestData("1");
+        Mpu6050 mpuThree = sensorManager.getLatestData("2");
 
         Mpu6050 filteredMpuOne = fingerOneFilter.filter(mpuOne);
         Mpu6050 filteredMpuTwo = fingerTwoFilter.filter(mpuTwo);
+        Mpu6050 filteredMpuThree = fingerThreeFilter.filter(mpuThree);
 
         Double angleFingerOne = -TiltCalculator.calculateTiltAngles(filteredMpuOne).getRoll();
         Double angleFingerTwo = -TiltCalculator.calculateTiltAngles(filteredMpuTwo).getRoll();
+        Double angleFingerThree = -TiltCalculator.calculateTiltAngles(filteredMpuThree).getRoll();
 
-        int indexServoAngle = mapRollToServo(angleFingerOne);
-        int middleServoAngle = mapRollToServo(angleFingerTwo);
 
-        String command = String.format("I:%03d;M:%03d\n", indexServoAngle, middleServoAngle);
+        int indexServoAngle = ServoUtil.mapRollToServo(angleFingerOne);
+        int middleServoAngle = ServoUtil.mapRollToServo(angleFingerTwo);
+        int ringServoAngle = ServoUtil.mapRollToServo(angleFingerThree);
+
+        String command = String.format("I:%03d;M:%03d;R:%03d\n", indexServoAngle, middleServoAngle, ringServoAngle);
 
         try {
             serialPort.writeString(command);
             log.info("Sent to Arduino: {}", command.trim());
         } catch (SerialPortException e) {
-            log.error("Failed to send command to Arduino", e);
+            log.debug("Failed to send command to Arduino");
         }
-    }
-
-    public static int mapRollToServo(double roll) {
-        double clamped = Math.max(0, Math.min(90, roll));
-        double normalized = clamped / 90.0;
-        return (int) Math.round(180 * (1.0 - normalized));
     }
 }
