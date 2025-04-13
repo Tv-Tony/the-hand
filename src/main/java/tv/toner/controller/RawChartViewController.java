@@ -44,10 +44,12 @@ public class RawChartViewController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         chartManager.chartProperties(lineChart, "Accelerometer Data (60-second Rolling Window)");
         chartManager.initXAxis(xAxis, "Time (s)", 5, 4);
-        chartManager.initYAxis(yAxis, "Accelerometer Value", -10000, 34000, 2000);
+        chartManager.initYAxis(yAxis, "Accelerometer Value", -30000, 34000, 2000);
         chartManager.registerChart(ChartKey.AX_DATA_CHART, lineChart, Arrays.asList(
                         SeriesDefs.FINGER_ONE
+                        ,SeriesDefs.FINGER_ONE_FILTERED
                         ,SeriesDefs.FINGER_TWO
+                        ,SeriesDefs.FINGER_TWO_FILTERED
 //                        ,SeriesDefs.FINGER_THREE
                 )); // Initialize the chart and store the reference in ChartUtil
     }
