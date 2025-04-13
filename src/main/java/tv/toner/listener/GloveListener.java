@@ -46,7 +46,7 @@ public class GloveListener implements SerialPortEventListener {
     private final static Long RECONNECT_DELAY = 10000L;
     private static final int BAUD_RATE = 115200;
 
-    private final int sensorCount = 3;
+    private final int sensorCount = 2; // Todo application properties variable
     private final Map<String, Mpu6050> pendingData = new ConcurrentHashMap<>();
 
     private static final Pattern LINE_PATTERN = Pattern.compile(

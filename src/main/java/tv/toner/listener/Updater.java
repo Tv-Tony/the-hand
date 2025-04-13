@@ -19,7 +19,7 @@ import javafx.scene.Parent;
 import tv.toner.defs.JointDef;
 import tv.toner.entity.Mpu6050;
 import tv.toner.manager.SensorManager;
-import tv.toner.utils.MPU6050Utility;
+import tv.toner.utils.TiltCalculator;
 
 @Component
 public class Updater implements ApplicationListener<GloveEvent> {
@@ -32,7 +32,7 @@ public class Updater implements ApplicationListener<GloveEvent> {
 
     Triplet<Double, Double, Double> firstAngle = null;
 
-    private MPU6050Utility utility;
+    private TiltCalculator utility;
 
     private final SensorManager sensorManager;
 
@@ -44,14 +44,14 @@ public class Updater implements ApplicationListener<GloveEvent> {
     public void initialize(List<Parent> forestRight, PolygonMeshView skinningRight) {
         this.forestRight = forestRight;
         this.skinningRight = skinningRight;
-        this.utility = new MPU6050Utility();
-        utility.setCalibrationPoints(33000, 22000, 6000);
+        this.utility = new TiltCalculator();
     }
 
     @Override
     public void onApplicationEvent(GloveEvent event) {
 
-        Mpu6050 latestValue = sensorManager.getLatestData("0");
+        Mpu6050 mpuOne = sensorManager.getLatestData("0");
+        Mpu6050 mpuTwo = sensorManager.getLatestData("1");
 
         try {
             Joint middleMetacarpal = (Joint) forestRight.get(0).lookup(JointDef.MIDDLE_METACARPAL.getBonePattern());
@@ -66,31 +66,31 @@ public class Updater implements ApplicationListener<GloveEvent> {
 
             Platform.runLater(() -> {
 
-                middleMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
-//                middleMetacarpal.ry.setAngle(latestValue.getAngleY());
-
-                indexMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
+                indexMetacarpal.rx.setAngle(-TiltCalculator.calculateTiltAngles(mpuOne).getRoll());
 //                indexMetacarpal.ry.setAngle(latestValue.getAngleY());
 
-                ringMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
+                middleMetacarpal.rx.setAngle(-TiltCalculator.calculateTiltAngles(mpuTwo).getRoll());
+//                middleMetacarpal.ry.setAngle(latestValue.getAngleY());
+
+                ringMetacarpal.rx.setAngle(45);
 //                ringMetacarpal.ry.setAngle(latestValue.getAngleY());
 
-                pinkyMetacarpal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
+                pinkyMetacarpal.rx.setAngle(45);
 //                pinkyMetacarpal.ry.setAngle(latestValue.getAngleY());
 
-                middleProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
-//                middleProximal.ry.setAngle(latestValue.getAngleY());
-
-                indexProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
+                indexProximal.rx.setAngle(-TiltCalculator.calculateTiltAngles(mpuOne).getRoll());
 //                indexProximal.ry.setAngle(latestValue.getAngleY());
 
-                ringProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
+                middleProximal.rx.setAngle(-TiltCalculator.calculateTiltAngles(mpuTwo).getRoll());
+//                middleProximal.ry.setAngle(latestValue.getAngleY());
+
+                ringProximal.rx.setAngle(45);
 //                ringProximal.ry.setAngle(latestValue.getAngleY());
 
-                pinkyProximal.rx.setAngle(utility.getXAngleFromRaw(latestValue.getAx()));
+                pinkyProximal.rx.setAngle(45);
 //                pinkyProximal.ry.setAngle(latestValue.getAngleY());
 
-                lastHandPosition.set(latestValue); // Update lastHandPosition with the new value
+                lastHandPosition.set(mpuOne); // Update lastHandPosition with the new value
                 ((SkinningMesh) skinningRight.getMesh()).update();
             });
         } catch (Exception e) {
