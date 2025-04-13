@@ -115,9 +115,9 @@ public class FilterPipeline implements ApplicationListener<GloveEvent> {
         // ───────────────────────────────────────────────────────
         // STEP 5: Apply Smoothing Filter to Angles
         // ───────────────────────────────────────────────────────
-        double rollOneFiltered   = fingerOneAngleFilter.filterAngle(rollOneRaw);
-        double rollTwoFiltered   = fingerTwoAngleFilter.filterAngle(rollTwoRaw);
-        double rollThreeFiltered = fingerThreeAngleFilter.filterAngle(rollThreeRaw);
+        double rollOneFiltered   = /*fingerOneAngleFilter.filterAngle(rollOneRaw);*/ rollOneRaw;
+        double rollTwoFiltered   = /*fingerTwoAngleFilter.filterAngle(rollTwoRaw);*/ rollTwoRaw;
+        double rollThreeFiltered = /*fingerThreeAngleFilter.filterAngle(rollThreeRaw);*/ rollThreeRaw;
 
         angleChartDataUtil.updateChartData(SeriesDef.ANGLE_DATA_FINGER_ONE_FILTERED, rollOneFiltered);
         angleChartDataUtil.updateChartData(SeriesDef.ANGLE_DATA_FINGER_TWO_FILTERED, rollTwoFiltered);

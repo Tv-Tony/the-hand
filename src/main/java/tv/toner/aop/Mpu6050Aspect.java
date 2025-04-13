@@ -18,7 +18,7 @@ public class Mpu6050Aspect {
 
     private int logCount = 0;
 
-    @After("execution(* tv.toner.listener.Updater.onApplicationEvent(..)) && args(event)")
+    @After("execution(* tv.toner.listener.FilterPipeline.onApplicationEvent(..)) && args(event)")
     public void logAfterPublishEvent(JoinPoint joinPoint, Object event) {
         if (event instanceof GloveEvent) {
             logCount++;

@@ -32,20 +32,29 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.Tab?>
-<TabPane xmlns="http://javafx.com/javafx/23.0.1"
-         xmlns:fx="http://javafx.com/fxml/1">
-    <Tab text="Hand View">
-        <fx:include source="/hand-view.fxml"/>
-    </Tab>
-    <Tab text="Raw Data View">
-        <fx:include source="/raw-chart-view.fxml"/>
-    </Tab>
-    <Tab text="Angle View">
-        <fx:include source="/angle-chart-view.fxml"/>
-    </Tab>
-    <Tab text="Servo View">
-        <fx:include source="/servo-chart-view.fxml"/>
-    </Tab>
-</TabPane>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tv.toner.controller.ServoChartViewController">
+
+    <HBox spacing="10" alignment="CENTER_LEFT" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+        <!-- Chart -->
+        <LineChart fx:id="lineChart" HBox.hgrow="ALWAYS">
+            <xAxis>
+                <NumberAxis side="BOTTOM" fx:id="xAxis" />
+            </xAxis>
+            <yAxis>
+                <NumberAxis fx:id="yAxis" side="LEFT" />
+            </yAxis>
+        </LineChart>
+
+        <!-- VBox wrapper with hard sizing -->
+        <StackPane prefWidth="150.0" minWidth="150.0" maxWidth="150.0" HBox.hgrow="NEVER">
+            <VBox fx:id="toggleBox"
+                  spacing="10"
+                  style="-fx-padding: 10; -fx-background-color: lightgray;" />
+        </StackPane>
+
+    </HBox>
+</AnchorPane>

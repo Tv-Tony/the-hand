@@ -51,6 +51,10 @@ public class Mpu6050 {
         this.timestamp = timestamp;
     }
 
+    public Mpu6050(int ay) {
+        this.ay = ay;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

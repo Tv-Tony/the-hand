@@ -27,7 +27,19 @@ public enum SeriesDef {
     ANGLE_DATA_FINGER_TWO_FILTERED("Finger Two Filtered Data"),
 
     ANGLE_DATA_FINGER_THREE("Finger Three Raw Data"),
-    ANGLE_DATA_FINGER_THREE_FILTERED("Finger Three Filtered Data");
+    ANGLE_DATA_FINGER_THREE_FILTERED("Finger Three Filtered Data"),
+
+    /**
+     * Series For Servo Data
+     */
+    FINGER_ONE_SERVO("Finger One Servo Angle"),
+    FINGER_ONE_SERVO_FILTERED("Finger One Servo Angle Filtered"),
+
+    FINGER_TWO_SERVO("Finger Two Servo Angle"),
+    FINGER_TWO_SERVO_FILTERED("Finger Two Servo Angle Filtered"),
+
+    FINGER_THREE_SERVO("Finger Three Servo Angle"),
+    FINGER_THREE_SERVO_FILTERED("Finger Three Servo Angle Filtered");
 
     private final String displayName;
     private final ToggleButtonDef  toggleButtonDef;

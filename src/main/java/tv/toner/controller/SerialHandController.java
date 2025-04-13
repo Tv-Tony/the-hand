@@ -6,38 +6,41 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Controller;
+import tv.toner.defs.ChartKey;
+import tv.toner.defs.SeriesDef;
 import tv.toner.entity.Mpu6050;
 import tv.toner.filter.DigitalSmoothFilter;
-import tv.toner.listener.GloveEvent;
-import tv.toner.manager.SensorManager;
+import tv.toner.listener.ProcessedAngleEvent;
+import tv.toner.manager.ChartManager;
+import tv.toner.utils.ChartUtil;
 import tv.toner.utils.ServoUtil;
-import tv.toner.utils.TiltCalculator;
 
-@Component
-public class SerialHandController implements ApplicationListener<GloveEvent> {
+@Controller
+@Lazy // So that this is Initialize after the charts are created in java fx
+public class SerialHandController implements ApplicationListener<ProcessedAngleEvent> {
 
     private static final Logger log = LogManager.getLogger(SerialHandController.class);
 
     private static final String PORT_NAME = "/dev/ttyUSB1";
 
-    private final SensorManager sensorManager;
+    private final SerialPort serialPort;
+
+    private final ChartUtil servoChartUtil;
 
     private final DigitalSmoothFilter fingerOneFilter;
     private final DigitalSmoothFilter fingerTwoFilter;
     private final DigitalSmoothFilter fingerThreeFilter;
 
-    private final SerialPort serialPort;
-
     @Autowired
-    public SerialHandController(SensorManager sensorManager) {
-        this.sensorManager = sensorManager;
-
+    public SerialHandController(ChartManager chartManager) {
         // Sensor filters (1 per sensor)
-        this.fingerOneFilter = new DigitalSmoothFilter(20, 10);
-        this.fingerTwoFilter = new DigitalSmoothFilter(20, 10);
-        this.fingerThreeFilter =  new DigitalSmoothFilter(20, 10);
+        this.fingerOneFilter = new DigitalSmoothFilter(3, 10);
+        this.fingerTwoFilter = new DigitalSmoothFilter(3, 10);
+        this.fingerThreeFilter = new DigitalSmoothFilter(3, 10);
 
+        this.servoChartUtil = chartManager.getChartUtil(ChartKey.SERVO_CHART);
         this.serialPort = new SerialPort(PORT_NAME);
         try {
             serialPort.openPort();
@@ -54,30 +57,36 @@ public class SerialHandController implements ApplicationListener<GloveEvent> {
     }
 
     @Override
-    public void onApplicationEvent(GloveEvent event) {
+    public void onApplicationEvent(ProcessedAngleEvent event) {
 
-        Mpu6050 mpuOne = sensorManager.getLatestData("0");
-        Mpu6050 mpuTwo = sensorManager.getLatestData("1");
-        Mpu6050 mpuThree = sensorManager.getLatestData("2");
-
-        Mpu6050 filteredMpuOne = fingerOneFilter.filter(mpuOne);
-        Mpu6050 filteredMpuTwo = fingerTwoFilter.filter(mpuTwo);
-        Mpu6050 filteredMpuThree = fingerThreeFilter.filter(mpuThree);
-
-        Double angleFingerOne = -TiltCalculator.calculateTiltAngles(filteredMpuOne).getRoll();
-        Double angleFingerTwo = -TiltCalculator.calculateTiltAngles(filteredMpuTwo).getRoll();
-        Double angleFingerThree = -TiltCalculator.calculateTiltAngles(filteredMpuThree).getRoll();
+        double rollOneFiltered   = event.getProcessedAngleWithKey("0");
+        double rollTwoFiltered   = event.getProcessedAngleWithKey("1");
+        double rollThreeFiltered = event.getProcessedAngleWithKey("2");
 
 
-        int indexServoAngle = ServoUtil.mapRollToServo(angleFingerOne);
-        int middleServoAngle = ServoUtil.mapRollToServo(angleFingerTwo);
-        int ringServoAngle = ServoUtil.mapRollToServo(angleFingerThree);
+
+        int indexServoAngle = ServoUtil.mapRollToServo(rollOneFiltered);
+        int middleServoAngle = ServoUtil.mapRollToServo(rollTwoFiltered);
+        int ringServoAngle = ServoUtil.mapRollToServo(rollThreeFiltered);
+
+        servoChartUtil.updateChartData(SeriesDef.FINGER_ONE_SERVO, indexServoAngle);
+        servoChartUtil.updateChartData(SeriesDef.FINGER_TWO_SERVO, middleServoAngle);
+        servoChartUtil.updateChartData(SeriesDef.FINGER_THREE_SERVO, ringServoAngle);
+
+        int indexServoAngleFiltered = fingerOneFilter.filter(new Mpu6050(indexServoAngle)).getAy();
+        int middleServoAngleFiltered = fingerTwoFilter.filter(new Mpu6050(middleServoAngle)).getAy();
+        int ringServoAngleFiltered   = fingerThreeFilter.filter(new Mpu6050(ringServoAngle)).getAy();
+
+        servoChartUtil.updateChartData(SeriesDef.FINGER_ONE_SERVO_FILTERED, indexServoAngleFiltered);
+        servoChartUtil.updateChartData(SeriesDef.FINGER_TWO_SERVO_FILTERED, middleServoAngleFiltered);
+        servoChartUtil.updateChartData(SeriesDef.FINGER_THREE_SERVO_FILTERED, ringServoAngleFiltered);
+
 
         String command = String.format("I:%03d;M:%03d;R:%03d\n", indexServoAngle, middleServoAngle, ringServoAngle);
 
         try {
             serialPort.writeString(command);
-            log.info("Sent to Arduino: {}", command.trim());
+            log.debug("Sent to Arduino: {}", command.trim());
         } catch (SerialPortException e) {
             log.debug("Failed to send command to Arduino");
         }

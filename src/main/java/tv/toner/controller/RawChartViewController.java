@@ -5,12 +5,12 @@ import java.util.*;
 
 import javafx.scene.layout.VBox;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
+import org.springframework.stereotype.Controller;
 import tv.toner.defs.ChartKey;
 import tv.toner.defs.SeriesDef;
 import tv.toner.defs.ToggleButtonDef;
@@ -23,7 +23,7 @@ import tv.toner.utils.ToggleButtonUtil;
  * @author Antonin Vychodil <a_vychodil [at] utb.cz>
  *
  */
-@Component
+@Controller
 public class RawChartViewController implements Initializable {
 
     @FXML
