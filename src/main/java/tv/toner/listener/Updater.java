@@ -18,6 +18,8 @@ import javafx.application.Platform;
 import javafx.scene.Parent;
 import tv.toner.defs.JointDef;
 import tv.toner.entity.Mpu6050;
+import tv.toner.filter.AngleFilter;
+import tv.toner.filter.DigitalSmoothFilter;
 import tv.toner.manager.SensorManager;
 import tv.toner.utils.TiltCalculator;
 
@@ -25,26 +27,37 @@ import tv.toner.utils.TiltCalculator;
 public class Updater implements ApplicationListener<GloveEvent> {
 
     private static final Logger log = LoggerFactory.getLogger(Updater.class);
-    private static final AtomicReference<Mpu6050> lastHandPosition = new AtomicReference<>(null);
+
+    private final DigitalSmoothFilter fingerOneFilter;
+    private final DigitalSmoothFilter fingerTwoFilter;
+    private final DigitalSmoothFilter fingerThreeFilter;
+
+    private final AngleFilter fingerOneAngleFilter;
+    private final AngleFilter fingerTwoAngleFilter;
+    private final AngleFilter fingerThreeAngleFilter;
 
     private List<Parent> forestRight;
     private PolygonMeshView skinningRight;
-
-    Triplet<Double, Double, Double> firstAngle = null;
-
-    private TiltCalculator utility;
 
     private final SensorManager sensorManager;
 
     @Autowired
     public Updater(SensorManager sensorManager) {
         this.sensorManager = sensorManager;
+
+        // Sensor filters (1 per sensor)
+        this.fingerOneFilter = new DigitalSmoothFilter(20, 10);
+        this.fingerTwoFilter = new DigitalSmoothFilter(20, 10);
+        this.fingerThreeFilter = new DigitalSmoothFilter(20, 10);
+
+        this.fingerOneAngleFilter = new AngleFilter(20);
+        this.fingerTwoAngleFilter = new AngleFilter(20);
+        this.fingerThreeAngleFilter = new AngleFilter(20);
     }
 
     public void initialize(List<Parent> forestRight, PolygonMeshView skinningRight) {
         this.forestRight = forestRight;
         this.skinningRight = skinningRight;
-        this.utility = new TiltCalculator();
     }
 
     @Override
@@ -52,6 +65,11 @@ public class Updater implements ApplicationListener<GloveEvent> {
 
         Mpu6050 mpuOne = sensorManager.getLatestData("0");
         Mpu6050 mpuTwo = sensorManager.getLatestData("1");
+        Mpu6050 mpuThree = sensorManager.getLatestData("2");
+
+        Mpu6050 filteredMpuOne = fingerOneFilter.filter(mpuOne);
+        Mpu6050 filteredMpuTwo = fingerTwoFilter.filter(mpuTwo);
+        Mpu6050 filteredMpuThree = fingerThreeFilter.filter(mpuThree);
 
         try {
             Joint middleMetacarpal = (Joint) forestRight.get(0).lookup(JointDef.MIDDLE_METACARPAL.getBonePattern());
@@ -65,32 +83,33 @@ public class Updater implements ApplicationListener<GloveEvent> {
             Joint pinkyProximal = (Joint) forestRight.get(0).lookup(JointDef.PINKY_PROXIMAL.getBonePattern());
 
             Platform.runLater(() -> {
+                // === Index Finger ===
+                double indexAngle = fingerOneAngleFilter.filterAngle(
+                        -TiltCalculator.calculateTiltAngles(filteredMpuOne).getRoll()
+                );
+                indexMetacarpal.rx.setAngle(indexAngle);
+                indexProximal.rx.setAngle(indexAngle);
 
-                indexMetacarpal.rx.setAngle(-TiltCalculator.calculateTiltAngles(mpuOne).getRoll());
-//                indexMetacarpal.ry.setAngle(latestValue.getAngleY());
+                // === Middle Finger ===
+                double middleAngle = fingerTwoAngleFilter.filterAngle(
+                        -TiltCalculator.calculateTiltAngles(filteredMpuTwo).getRoll()
+                );
+                middleMetacarpal.rx.setAngle(middleAngle);
+                middleProximal.rx.setAngle(middleAngle);
 
-                middleMetacarpal.rx.setAngle(-TiltCalculator.calculateTiltAngles(mpuTwo).getRoll());
-//                middleMetacarpal.ry.setAngle(latestValue.getAngleY());
+                // === Ring Finger ===
+                double ringAngle = fingerThreeAngleFilter.filterAngle(
+                        -TiltCalculator.calculateTiltAngles(filteredMpuThree).getRoll()
+                );
+                ringMetacarpal.rx.setAngle(ringAngle);
+                ringProximal.rx.setAngle(ringAngle);
 
-                ringMetacarpal.rx.setAngle(45);
-//                ringMetacarpal.ry.setAngle(latestValue.getAngleY());
+                // === Pinky Finger (static placeholder) ===
+                double pinkyAngle = 45.0;
+                pinkyMetacarpal.rx.setAngle(pinkyAngle);
+                pinkyProximal.rx.setAngle(pinkyAngle);
 
-                pinkyMetacarpal.rx.setAngle(45);
-//                pinkyMetacarpal.ry.setAngle(latestValue.getAngleY());
-
-                indexProximal.rx.setAngle(-TiltCalculator.calculateTiltAngles(mpuOne).getRoll());
-//                indexProximal.ry.setAngle(latestValue.getAngleY());
-
-                middleProximal.rx.setAngle(-TiltCalculator.calculateTiltAngles(mpuTwo).getRoll());
-//                middleProximal.ry.setAngle(latestValue.getAngleY());
-
-                ringProximal.rx.setAngle(45);
-//                ringProximal.ry.setAngle(latestValue.getAngleY());
-
-                pinkyProximal.rx.setAngle(45);
-//                pinkyProximal.ry.setAngle(latestValue.getAngleY());
-
-                lastHandPosition.set(mpuOne); // Update lastHandPosition with the new value
+                // === Update skinning mesh ===
                 ((SkinningMesh) skinningRight.getMesh()).update();
             });
         } catch (Exception e) {
