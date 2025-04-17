@@ -6,7 +6,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-
 import tv.toner.defs.ChartKey;
 import tv.toner.defs.SeriesDef;
 import tv.toner.entity.Mpu6050;
@@ -115,9 +114,9 @@ public class FilterPipeline implements ApplicationListener<GloveEvent> {
         // ───────────────────────────────────────────────────────
         // STEP 5: Apply Smoothing Filter to Angles
         // ───────────────────────────────────────────────────────
-        double rollOneFiltered   = /*fingerOneAngleFilter.filterAngle(rollOneRaw);*/ rollOneRaw;
-        double rollTwoFiltered   = /*fingerTwoAngleFilter.filterAngle(rollTwoRaw);*/ rollTwoRaw;
-        double rollThreeFiltered = /*fingerThreeAngleFilter.filterAngle(rollThreeRaw);*/ rollThreeRaw;
+        double rollOneFiltered   = fingerOneAngleFilter.filterAngle(rollOneRaw);
+        double rollTwoFiltered   = fingerTwoAngleFilter.filterAngle(rollTwoRaw);
+        double rollThreeFiltered = fingerThreeAngleFilter.filterAngle(rollThreeRaw);
 
         angleChartDataUtil.updateChartData(SeriesDef.ANGLE_DATA_FINGER_ONE_FILTERED, rollOneFiltered);
         angleChartDataUtil.updateChartData(SeriesDef.ANGLE_DATA_FINGER_TWO_FILTERED, rollTwoFiltered);

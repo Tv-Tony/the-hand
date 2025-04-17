@@ -82,7 +82,6 @@ public class TheHandController implements Initializable {
 
         // Add the new SubScene to the VBox
         mainVBox.getChildren().set(1, stackPane); // Replace the SubScene directly in the VBox
-        System.out.println(mainVBox.getChildren());
     }
 
     private void addResizeListener(TitledPane titledPane) {
