@@ -40,7 +40,7 @@ public class ServoChartViewController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        chartManager.chartProperties(lineChart, "Data Sent To Servo Data (60-second Rolling Window)");
+        chartManager.chartProperties(lineChart, "Data Sent To Servo (60-second Rolling Window)");
         chartManager.initXAxis(xAxis, "Time (s)", 5, 4);
         chartManager.initYAxis(yAxis, "Servo Data", -20, 200, 20);
         chartManager.registerChart(ChartKey.SERVO_CHART, lineChart, Arrays.asList(
@@ -58,9 +58,9 @@ public class ServoChartViewController implements Initializable {
     private void addGroupedToggles() {
 
         ToggleButtonUtil.registerToggleButtons(Arrays.asList(
-                        ToggleButtonDef.FINGER_ONE,
-                        ToggleButtonDef.FINGER_TWO,
-                        ToggleButtonDef.FINGER_THREE),
+                        ToggleButtonDef.FINGER_ONE_SERVO,
+                        ToggleButtonDef.FINGER_TWO_SERVO,
+                        ToggleButtonDef.FINGER_THREE_SERVO),
                 toggleBox,
                 chartManager);
     }

@@ -67,9 +67,8 @@ public class Updater implements ApplicationListener<ProcessedAngleEvent> {
                 ringMetacarpal.rx.setAngle(rollThreeFiltered);
                 ringProximal.rx.setAngle(rollThreeFiltered);
 
-                double pinkyAngle = 45.0;
-                pinkyMetacarpal.rx.setAngle(pinkyAngle);
-                pinkyProximal.rx.setAngle(pinkyAngle);
+                pinkyMetacarpal.rx.setAngle(rollThreeFiltered);
+                pinkyProximal.rx.setAngle(rollThreeFiltered);
 
                 ((SkinningMesh) skinningRight.getMesh()).update();
             });
