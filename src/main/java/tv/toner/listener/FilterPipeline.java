@@ -18,6 +18,7 @@ import tv.toner.utils.TiltCalculator;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -31,6 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Lazy // So that this is Initialize after the charts are created in java fx
 public class FilterPipeline implements ApplicationListener<GloveEvent> {
+
+    private static final double UPPER_BOUND = 100.00;
+    private static final double LOWER_BOUND = -10.00;
 
     private final SensorManager sensorManager;
 
@@ -87,7 +91,7 @@ public class FilterPipeline implements ApplicationListener<GloveEvent> {
         // ───────────────────────────────────────────────────────
         rawChartUtil.updateChartData(SeriesDef.FINGER_ONE, mpuOne.getAy());
         rawChartUtil.updateChartData(SeriesDef.FINGER_TWO, mpuTwo.getAy());
-        rawChartUtil.updateChartData(SeriesDef.FINGER_THREE, mpuThree.getAx());
+        rawChartUtil.updateChartData(SeriesDef.FINGER_THREE, mpuThree.getAy());
 
         // ───────────────────────────────────────────────────────
         // STEP 3: Apply Filters to Raw Data
@@ -98,7 +102,7 @@ public class FilterPipeline implements ApplicationListener<GloveEvent> {
 
         rawChartUtil.updateChartData(SeriesDef.FINGER_ONE_FILTERED, filteredOne.getAy());
         rawChartUtil.updateChartData(SeriesDef.FINGER_TWO_FILTERED, filteredTwo.getAy());
-        rawChartUtil.updateChartData(SeriesDef.FINGER_THREE_FILTERED, filteredThree.getAx());
+        rawChartUtil.updateChartData(SeriesDef.FINGER_THREE_FILTERED, filteredThree.getAy());
 
         // ───────────────────────────────────────────────────────
         // STEP 4: Calculate Raw Angles from Filtered Accel Data
@@ -114,9 +118,13 @@ public class FilterPipeline implements ApplicationListener<GloveEvent> {
         // ───────────────────────────────────────────────────────
         // STEP 5: Apply Smoothing Filter to Angles
         // ───────────────────────────────────────────────────────
-        double rollOneFiltered   = fingerOneAngleFilter.filterAngle(rollOneRaw);
-        double rollTwoFiltered   = fingerTwoAngleFilter.filterAngle(rollTwoRaw);
-        double rollThreeFiltered = fingerThreeAngleFilter.filterAngle(rollThreeRaw);
+//        double rollOneFiltered   = fingerOneAngleFilter.filterAngle(rollOneRaw);
+//        double rollTwoFiltered   = fingerTwoAngleFilter.filterAngle(rollTwoRaw);
+//        double rollThreeFiltered = fingerThreeAngleFilter.filterAngle(rollThreeRaw);
+
+        double rollOneFiltered = angleRestrictionFilter(rollOneRaw);
+        double rollTwoFiltered = angleRestrictionFilter(rollTwoRaw);
+        double rollThreeFiltered = angleRestrictionFilter(rollThreeRaw);
 
         angleChartDataUtil.updateChartData(SeriesDef.ANGLE_DATA_FINGER_ONE_FILTERED, rollOneFiltered);
         angleChartDataUtil.updateChartData(SeriesDef.ANGLE_DATA_FINGER_TWO_FILTERED, rollTwoFiltered);
@@ -131,5 +139,13 @@ public class FilterPipeline implements ApplicationListener<GloveEvent> {
         eventPublisher.publishEvent(processedAngleEvent);
 
         pendingData.clear();
+    }
+
+    private double angleRestrictionFilter(double angle) {
+        if (angle > UPPER_BOUND)
+            return 98.00 + (102.00 - 98.00) * new Random().nextDouble(); // from 98 to 102
+        if (angle < LOWER_BOUND)
+            return -12.00 + (4.00) * new Random().nextDouble(); // from -12 to -8
+        else return angle;
     }
 }
